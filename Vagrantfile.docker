@@ -1,0 +1,47 @@
+Vagrant.configure("2") do |config|
+  config.vm.provider :docker do |d|
+    d.image = 'debian:buster'
+    d.has_ssh = true
+    d.remains_running = true
+  end
+  config.vm.define "xlgtm" do |xlgtm|
+    xlgtm.vm.hostname = 'xlgtm'
+    xlgtm.vm.network :private_network, ip: '10.33.1.114'
+    xlgtm.vm.provider :docker do |d|
+      d.name = 'xlgtm'
+    end
+    xlgtm.vm.provision "shell", preserve_order: true, path: "install.sh"
+    xlgtm.vm.provision "shell", preserve_order: true, path: "init.sh", args: "gtm"
+    xlgtm.vm.provision "shell", preserve_order: true, path: "start.sh", args: "gtm", run: "always"
+  end
+  config.vm.define "xlcoord" do |xlcoord|
+    xlcoord.vm.hostname = 'xlcoord'
+    xlcoord.vm.network :private_network, ip: '10.33.1.115'
+    xlcoord.vm.provider :docker do |d|
+      d.name = 'xlcoord'
+    end
+    xlcoord.vm.provision "shell", preserve_order: true, path: "install.sh"
+    xlcoord.vm.provision "shell", preserve_order: true, path: "init.sh", args: "coordinator 40100 10.33.1.114 10.33.1.0/24"
+    xlcoord.vm.provision "shell", preserve_order: true, path: "start.sh", args: "coordinator", run: "always"
+  end
+  config.vm.define "xldata1" do |xldata1|
+    xldata1.vm.hostname = 'xldata1'
+    xldata1.vm.network :private_network, ip: '10.33.1.116'
+    xldata1.vm.provider :docker do |d|
+      d.name = 'xldata1'
+    end
+    xldata1.vm.provision "shell", preserve_order: true, path: "install.sh"
+    xldata1.vm.provision "shell", preserve_order: true, path: "init.sh", args: "datanode 40101 10.33.1.114 10.33.1.0/24"
+    xldata1.vm.provision "shell", preserve_order: true, path: "start.sh", args: "datanode", run: "always"
+  end
+  config.vm.define "xldata2" do |xldata2|
+    xldata2.vm.hostname = 'xldata2'
+    xldata2.vm.network :private_network, ip: '10.33.1.117'
+    xldata2.vm.provider :docker do |d|
+      d.name = 'xldata2'
+    end
+    xldata2.vm.provision "shell", preserve_order: true, path: "install.sh"
+    xldata2.vm.provision "shell", preserve_order: true, path: "init.sh", args: "datanode 40102 10.33.1.114 10.33.1.0/24"
+    xldata2.vm.provision "shell", preserve_order: true, path: "start.sh", args: "datanode", run: "always"
+  end
+end
